@@ -4,6 +4,10 @@ Gutenberg's deprecation policy is intended to support backwards-compatibility fo
 
  - `wp.components.withContext` has been removed. Please use `wp.element.createContext` instead. See: https://reactjs.org/docs/context.html.
  - `wp.coreBlocks.registerCoreBlocks` has been removed. Please use `wp.blockLibrary.registerCoreBlocks` instead.
+ - `wp.editor.getColorName` has been removed. Please use `wp.editor.getColorObjectByColorValue` instead.
+ - `wp.editor.getColorClass` has been renamed. Please use `wp.editor.getColorClassName` instead.
+ - `value` property in color objects passed by `wp.editor.withColors` has been removed. Please use color property instead.
+
 
 ## 3.7.0
 

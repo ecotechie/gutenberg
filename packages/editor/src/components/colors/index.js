@@ -1,2 +1,7 @@
-export { getColorClass, getColorName } from './utils';
+export {
+	getColorClassName,
+	getColorName,
+	getColorObjectByAttributeValues,
+	getColorObjectByColorValue,
+} from './utils';
 export { default as withColors } from './with-colors';
