@@ -179,13 +179,16 @@ describe( 'withHistoryAmender', () => {
 			incompleteActions: {},
 		};
 
-		const blocksEnhanced = ( state = initialState, { type, id, value } ) => {
-			if ( type === 'UPDATE' ) {
+		const blocksEnhanced = ( state = initialState, { type, clientId, attributes } ) => {
+			if ( type === 'UPDATE_BLOCK_ATTRIBUTES' ) {
 				return {
 					past: [ ...state.past, state.present ],
 					present: {
 						...state.present,
-						[ id ]: value,
+						[ clientId ]: {
+							...state.present[ clientId ],
+							...attributes,
+						},
 					},
 					future: [],
 					lastAction: null,
@@ -197,23 +200,35 @@ describe( 'withHistoryAmender', () => {
 		};
 
 		const merge = ( next, prev, action ) => {
-			const { id } = action;
+			const { clientId } = action;
 			return {
 				...prev,
-				[ id ]: next[ id ],
+				[ clientId ]: {
+					...prev[ clientId ],
+					...next[ clientId ],
+				},
 			};
 		};
 
-		it( 'should amend from the antepenultimate action', () => {
+		it( 'should deeply amend from the antepenultimate action', () => {
 			const reducer = withHistoryAmender( { merge } )( blocksEnhanced );
 			const past = [
 				{},
-				{ broccoli: 'green' },
-				{ broccoli: 'green', potato: 'yellow' },
+				{
+					broccoli: { color: 'green', taste: 'bleh' },
+				},
+				{
+					broccoli: { color: 'green', taste: 'bleh' },
+					potato: { color: 'yellow', taste: 'bland' },
+				},
 			];
 			const state = {
 				past,
-				present: { broccoli: 'green', potato: 'yellow', tomato: 'red' },
+				present: {
+					broccoli: { color: 'green', taste: 'bleh' },
+					potato: { color: 'yellow', taste: 'bland' },
+					tomato: { color: 'red', taste: 'delicious' },
+				},
 				future: [],
 				lastAction: null,
 				shouldCreateUndoLevel: false,
@@ -221,17 +236,26 @@ describe( 'withHistoryAmender', () => {
 			};
 
 			expect( reducer( state, {
-				type: 'UPDATE',
-				id: 'broccoli',
-				value: 'GREEN',
+				type: 'UPDATE_BLOCK_ATTRIBUTES',
+				clientId: 'broccoli',
+				attributes: { taste: 'tolerable' },
 				withHistoryAmends: { end: 123 },
 			} ) ).toEqual( {
 				past: [
 					{},
-					{ broccoli: 'GREEN' },
-					{ broccoli: 'GREEN', potato: 'yellow' },
+					{
+						broccoli: { color: 'green', taste: 'tolerable' },
+					},
+					{
+						broccoli: { color: 'green', taste: 'tolerable' },
+						potato: { color: 'yellow', taste: 'bland' },
+					},
 				],
-				present: { broccoli: 'GREEN', potato: 'yellow', tomato: 'red' },
+				present: {
+					broccoli: { color: 'green', taste: 'tolerable' },
+					potato: { color: 'yellow', taste: 'bland' },
+					tomato: { color: 'red', taste: 'delicious' },
+				},
 				future: [],
 				lastAction: null,
 				shouldCreateUndoLevel: false,

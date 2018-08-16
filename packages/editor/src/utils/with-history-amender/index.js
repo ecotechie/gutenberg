@@ -12,21 +12,23 @@ const withHistoryAmender = ( options = {} ) => ( reducer ) => {
 	const { merge = identity } = options;
 
 	return ( state = initialState, action ) => {
-		const wrappedState = reducer( state, action );
+		const { incompleteActions } = state;
 		const { withHistoryAmends: amends = false } = action;
+
+		const wrappedState = reducer( state, action );
 
 		if ( amends.begin ) {
 			return {
 				...wrappedState,
 				incompleteActions: {
-					...state.incompleteActions,
+					...incompleteActions,
 					[ amends.begin ]: wrappedState.present,
 				},
 			};
 		}
 
 		if ( amends.end ) {
-			const snapshot = state.incompleteActions[ amends.end ];
+			const snapshot = incompleteActions[ amends.end ];
 			const index = findLastIndex(
 				wrappedState.past,
 				( item ) => item === snapshot
@@ -46,12 +48,12 @@ const withHistoryAmender = ( options = {} ) => ( reducer ) => {
 				return {
 					...wrappedState,
 					past: newPast,
-					incompleteActions: omit( state.incompleteActions, amends.end ),
+					incompleteActions: omit( incompleteActions, amends.end ),
 				};
 			}
 		}
 
-		return { ...wrappedState, incompleteActions: state.incompleteActions };
+		return { ...wrappedState, incompleteActions };
 	};
 };
 
