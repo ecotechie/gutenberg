@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import withHistoryAmender from '../';
+import withHistoryAmender, { BEGIN, END } from '../';
 
 // withHistoryAmender expects the input reducer to be withHistory-enhanced,
 // i.e. to output state conforming to the following shape:
@@ -105,7 +105,7 @@ describe( 'withHistoryAmender', () => {
 			};
 			const action = {
 				type: 'INCREMENT',
-				withHistoryAmends: { begin: 123 },
+				withHistoryAmend: { type: BEGIN, id: 123 },
 			};
 
 			expect( reducer( state, action ) ).toEqual( {
@@ -131,7 +131,7 @@ describe( 'withHistoryAmender', () => {
 
 			expect( reducer( state, {
 				type: 'INCREMENT',
-				withHistoryAmends: { end: 123 },
+				withHistoryAmend: { type: END, id: 123 },
 			} ) ).toEqual( {
 				past: [ 0, 1, 2, 3 ],
 				present: 5,
@@ -155,7 +155,7 @@ describe( 'withHistoryAmender', () => {
 
 			expect( reducer( state, {
 				type: 'INCREMENT',
-				withHistoryAmends: { end: 123 },
+				withHistoryAmend: { type: END, id: 123 },
 			} ) ).toEqual( {
 				past: [ 0, 1, 5, 5 ],
 				present: 5,
@@ -239,7 +239,7 @@ describe( 'withHistoryAmender', () => {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
 				clientId: 'broccoli',
 				attributes: { taste: 'tolerable' },
-				withHistoryAmends: { end: 123 },
+				withHistoryAmend: { type: END, id: 123 },
 			} ) ).toEqual( {
 				past: [
 					{},
