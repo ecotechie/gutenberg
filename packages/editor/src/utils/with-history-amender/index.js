@@ -47,14 +47,21 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 		incompleteActions: {},
 	};
 
+	let lastWrappedState;
+
 	return ( state = initialState, action ) => {
 		const { incompleteActions } = state;
 		const { withHistoryAmend: amend = false } = action;
 
 		const wrappedState = originalReducer( state, action );
+		const isStateUnchanged = lastWrappedState && wrappedState === lastWrappedState;
+		lastWrappedState = wrappedState;
 
 		switch ( amend.type ) {
 			case BEGIN:
+				// Invalidate state cache for the next dispatch
+				lastWrappedState = null;
+
 				return {
 					...wrappedState,
 					incompleteActions: {
@@ -64,6 +71,9 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 				};
 
 			case END:
+				// Invalidate state cache for the next dispatch
+				lastWrappedState = null;
+
 				const snapshot = incompleteActions[ amend.id ];
 				const index = findLastIndex(
 					wrappedState.past,
@@ -89,7 +99,10 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 				}
 		}
 
-		return { ...wrappedState, incompleteActions };
+		// Avoid returning a new object reference is possible.
+		return isStateUnchanged ?
+			state :
+			{ ...wrappedState, incompleteActions };
 	};
 };
 
