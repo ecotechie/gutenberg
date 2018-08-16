@@ -74,6 +74,8 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 				// Invalidate state cache for the next dispatch
 				lastWrappedState = null;
 
+				// Find the point in the past corresponding to the given `id`
+				// representing a prior incomplete action.
 				const snapshot = incompleteActions[ amend.id ];
 				const index = findLastIndex(
 					wrappedState.past,
@@ -81,6 +83,8 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 				);
 
 				if ( snapshot && index >= 0 ) {
+					// From that point in the past onward into the present,
+					// modify each point according to `options.merge`.
 					const newPast = [ ...wrappedState.past ];
 					for ( let i = index; i < newPast.length; i++ ) {
 						newPast[ i ] = merge(
@@ -89,6 +93,9 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 							action
 						);
 					}
+
+					// Since we're amending the past, don't let the current
+					// action add a new point in history.
 					newPast.pop();
 
 					return {
@@ -97,6 +104,11 @@ const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 						incompleteActions: omit( incompleteActions, amend.id ),
 					};
 				}
+
+				window.console.warn( [
+					'withHistoryAmender: history could not be amended:',
+					'invalid action key',
+				].join( ' ' ) );
 		}
 
 		// Avoid returning a new object reference is possible.
