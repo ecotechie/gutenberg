@@ -166,4 +166,77 @@ describe( 'withHistoryAmender', () => {
 			} );
 		} );
 	} );
+	describe( 'with `blocks` reducer', () => {
+		const initialState = {
+			// From withHistory
+			past: [],
+			present: {},
+			future: [],
+			lastAction: null,
+			shouldCreateUndoLevel: false,
+
+			// From withHistoryAmender
+			incompleteActions: {},
+		};
+
+		const blocksEnhanced = ( state = initialState, { type, id, value } ) => {
+			if ( type === 'UPDATE' ) {
+				return {
+					past: [ ...state.past, state.present ],
+					present: {
+						...state.present,
+						[ id ]: value,
+					},
+					future: [],
+					lastAction: null,
+					shouldCreateUndoLevel: false,
+				};
+			}
+
+			return state;
+		};
+
+		const merge = ( next, prev, action ) => {
+			const { id } = action;
+			return {
+				...prev,
+				[ id ]: next[ id ],
+			};
+		};
+
+		it( 'should amend from the antepenultimate action', () => {
+			const reducer = withHistoryAmender( { merge } )( blocksEnhanced );
+			const past = [
+				{},
+				{ broccoli: 'green' },
+				{ broccoli: 'green', potato: 'yellow' },
+			];
+			const state = {
+				past,
+				present: { broccoli: 'green', potato: 'yellow', tomato: 'red' },
+				future: [],
+				lastAction: null,
+				shouldCreateUndoLevel: false,
+				incompleteActions: { 123: past[ 1 ] },
+			};
+
+			expect( reducer( state, {
+				type: 'UPDATE',
+				id: 'broccoli',
+				value: 'GREEN',
+				withHistoryAmends: { end: 123 },
+			} ) ).toEqual( {
+				past: [
+					{},
+					{ broccoli: 'GREEN' },
+					{ broccoli: 'GREEN', potato: 'yellow' },
+				],
+				present: { broccoli: 'GREEN', potato: 'yellow', tomato: 'red' },
+				future: [],
+				lastAction: null,
+				shouldCreateUndoLevel: false,
+				incompleteActions: {},
+			} );
+		} );
+	} );
 } );

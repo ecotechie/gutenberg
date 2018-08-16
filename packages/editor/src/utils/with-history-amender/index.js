@@ -1,13 +1,15 @@
 /**
  * External dependencies
  */
-import { findLastIndex, omit } from 'lodash';
+import { findLastIndex, identity, omit } from 'lodash';
 
-const withHistoryAmender = () => ( reducer ) => {
+const withHistoryAmender = ( options = {} ) => ( reducer ) => {
 	const initialState = {
 		...reducer( undefined, {} ),
 		incompleteActions: {},
 	};
+
+	const { merge = identity } = options;
 
 	return ( state = initialState, action ) => {
 		const wrappedState = reducer( state, action );
@@ -33,7 +35,11 @@ const withHistoryAmender = () => ( reducer ) => {
 			if ( snapshot && index >= 0 ) {
 				const newPast = [ ...wrappedState.past ];
 				for ( let i = index; i < newPast.length; i++ ) {
-					newPast[ i ] = wrappedState.present;
+					newPast[ i ] = merge(
+						wrappedState.present,
+						newPast[ i ],
+						action
+					);
 				}
 				newPast.pop();
 
