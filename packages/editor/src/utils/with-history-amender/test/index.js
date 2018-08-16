@@ -165,6 +165,10 @@ describe( 'withHistoryAmender', () => {
 				incompleteActions: {},
 			} );
 		} );
+
+		xit( 'sensibly forgets begun transactions after a while', () => {} );
+
+		xit( 'avoids returning a new object reference when possible', () => {} );
 	} );
 	describe( 'with `blocks` reducer', () => {
 		const initialState = {
