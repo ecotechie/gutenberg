@@ -167,8 +167,6 @@ describe( 'withHistoryAmender', () => {
 		} );
 
 		xit( 'sensibly forgets begun transactions after a while', () => {} );
-
-		xit( 'avoids returning a new object reference when possible', () => {} );
 	} );
 	describe( 'with `blocks` reducer', () => {
 		const initialState = {
@@ -265,6 +263,17 @@ describe( 'withHistoryAmender', () => {
 				shouldCreateUndoLevel: false,
 				incompleteActions: {},
 			} );
+		} );
+
+		it( 'avoids returning a new object reference when possible', () => {
+			const reducer = withHistoryAmender()( blocksEnhanced );
+			const noop = { type: 'NOOP' };
+
+			let state = reducer( initialState, { type: 'INCREMENT' } );
+			expect( reducer( state, noop ) ).toBe( state );
+
+			state = reducer( state, noop );
+			expect( reducer( state, noop ) ).toBe( state );
 		} );
 	} );
 } );

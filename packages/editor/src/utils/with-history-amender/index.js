@@ -42,19 +42,20 @@ export const END = 'END';
 const withHistoryAmender = ( options = {} ) => ( originalReducer ) => {
 	const { merge = identity } = options;
 
+	let lastWrappedState = originalReducer( undefined, {} );
+
 	const initialState = {
-		...originalReducer( undefined, {} ),
+		...lastWrappedState,
 		incompleteActions: {},
 	};
-
-	let lastWrappedState;
 
 	return ( state = initialState, action ) => {
 		const { incompleteActions } = state;
 		const { withHistoryAmend: amend = false } = action;
 
 		const wrappedState = originalReducer( state, action );
-		const isStateUnchanged = lastWrappedState && wrappedState === lastWrappedState;
+		const isStateUnchanged = lastWrappedState &&
+			wrappedState === lastWrappedState;
 		lastWrappedState = wrappedState;
 
 		switch ( amend.type ) {
